@@ -4,15 +4,21 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	GUID     string `gorm:"not null"`
-	NameUser string `gorm:"not null"`
-	EmaiUser string `gorm:"not null;unique"`
+	GUID         string `gorm:"not null;unique"`
+	EmailUser    string `gorm:"not null;unique"`
+	PassUserHash string `gorm:"pass" json:"-"`
+}
+
+type UserData struct {
+	GUID      string `json:"-"`
+	EmailUser string `json:"email" binding:"required,email"`
+	PassUser  string `json:"password" binding:"required,min=6"`
 }
 
 type ClientSession struct {
 	gorm.Model
-	RefreshToken string `json:"-"`
-	AdressIp     string 
+	RefreshToken string `gorm:"RefreshToken not null;unique" json:"-"`
+	AdressIp     string `gorm:"AdressIp"`
 }
 
 type Tokens struct {
