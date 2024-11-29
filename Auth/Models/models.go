@@ -2,13 +2,17 @@ package models
 
 import "gorm.io/gorm"
 
+type User struct {
+	gorm.Model
+	GUID     string `gorm:"not null"`
+	NameUser string `gorm:"not null"`
+	EmaiUser string `gorm:"not null;unique"`
+}
+
 type ClientSession struct {
 	gorm.Model
-	GUID         string `gorm:"not null"`
-	NameUser     string `gorm:"not null"`
-	RefreshToken string
-	Emai         string
-	AdressIp     string
+	RefreshToken string `json:"-"`
+	AdressIp     string 
 }
 
 type Tokens struct {

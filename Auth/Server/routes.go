@@ -7,7 +7,7 @@ import (
 func InitRotes() {
 	router := gin.Default()
 
-	router.POST("/auth", AuthHandler)
+	router.POST("/auth/:guid", AuthHandler)
 
 	router.POST("/auth/refresh", AuthRefreshHandler)
 

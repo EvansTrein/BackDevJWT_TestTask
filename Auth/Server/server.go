@@ -14,6 +14,7 @@ func InitServer() {
 	} else {
 		log.Println("Успешное подключение к базе данных")
 		// Миграции БД
+		database.DB.AutoMigrate(&models.User{})
 		database.DB.AutoMigrate(&models.ClientSession{})
 	}
 
