@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -17,8 +21,10 @@ type UserData struct {
 
 type ClientSession struct {
 	gorm.Model
-	RefreshToken string `gorm:"RefreshToken not null;unique" json:"-"`
-	AdressIp     string `gorm:"AdressIp"`
+	RefreshToken       string        `gorm:"not null;unique" json:"-"`
+	SessionGUID        string        `gorm:"not null;unique" json:"-"`
+	SessionIP          string        `gorm:"not null" json:"-"`
+	MaxSessionDuration time.Duration `gorm:"default:120" json:"-"`
 }
 
 type Tokens struct {
@@ -32,4 +38,5 @@ type ErrResponce struct {
 
 type ResponceData struct {
 	Message string
+	Data    interface{}
 }
