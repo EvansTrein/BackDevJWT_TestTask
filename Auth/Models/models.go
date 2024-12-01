@@ -24,7 +24,7 @@ type ClientSession struct {
 	RefreshToken       string        `gorm:"not null;unique" json:"-"`
 	SessionGUID        string        `gorm:"not null;unique" json:"-"`
 	SessionIP          string        `gorm:"not null" json:"-"`
-	MaxSessionDuration time.Duration `gorm:"default:120" json:"-"`
+	MaxSessionDuration time.Duration `gorm:"not null" json:"-"`
 }
 
 type Tokens struct {

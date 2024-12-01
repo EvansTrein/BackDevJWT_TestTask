@@ -31,21 +31,18 @@ func GenerateAcessToken(guid, clientIP string) (string, error) {
 func ValidateAccessToken(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("accessToken unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(JWT_SECRET), nil
 	})
 
-	if err != nil {
+	// пропускаем, если токен уже истек, нам надо вернуть сам токен и работать с ним в другом месте
+	// но если ошибка другая, то возвращаем эту ошибку
+	if err != nil && err.Error() != "Token is expired" {
 		return nil, err
 	}
 
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid access token")
-	}
-
 	return token, nil
-
 }
 
 func GenerateRefreshToken() (string, error) {

@@ -13,6 +13,8 @@ func InitRotes() {
 
 	router.POST("/auth/refresh", handlers.AuthRefreshHandler)
 
+	router.GET("/user", handlers.Middleware, handlers.UserHandler)
+
 	// router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.Run(":4000")

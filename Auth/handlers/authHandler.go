@@ -6,6 +6,7 @@ import (
 	tokens "AuthServ/Tokens"
 	"AuthServ/utils"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,6 +46,7 @@ func AuthHandler(ctx *gin.Context) {
 	sessionUser.RefreshToken = hashedRefreshToken // в БД отправляется bcrypt хеш
 	sessionUser.SessionGUID = GUID
 	sessionUser.SessionIP = AdressIp
+	sessionUser.MaxSessionDuration = time.Duration(time.Duration(3600 * time.Second)) // устанавливаем время жизни токена, тут 1 час
 
 	// сохраняем данные
 	if res := database.DB.Create(&sessionUser); res.Error != nil {
