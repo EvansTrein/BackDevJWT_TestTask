@@ -32,7 +32,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	var newActiveSission models.ClientSession // переменная для новой сессии, которая будет создана при обнолении токенов
 	var newTokens models.Tokens               // переменная для новых токенов
 	incomingIP := "127.1.1.1"                 // переменная для ip адреса, с которого был зовершен запрос
-	// var emailUser string                   // для отправки warning на почту, по хорошему, получаем из базы данных
+	emailUser := "evanstrein@icloud.com"      // для отправки warning на почту, по хорошему, получаем из базы данных
 	// incomingIP := ctx.ClientIP()			  // получаем IP-адрес клиента, если бы он был
 
 	// получаем AccessToken из заголовка Authorization и обрезаем префикс Bearer
@@ -53,6 +53,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 		return
 	} else if oldAccessToken.Valid {
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "was triggered to update tokens with still valid AccessToken"})
+		log.Println("ERROR - получен действительный AccessToken для обновления")
 		return
 	}
 
@@ -104,23 +105,33 @@ func AuthRefreshHandler(ctx *gin.Context) {
 
 	// сравниваем прошедшее время с максимальным временем жизни токена
 	if sinceRefreshTokenCreated > activeSission.MaxSessionDuration {
-		
+
 		// удаляем сессию из БД, если время жизни RefreshToken истекло
 		if _, err := delSession(guidSessionStr, &newActiveSission); err != nil {
 			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
 			log.Panicln(err)
 			return
 		}
-		
+
 		log.Println("Сессия у которой вышло время успешно удалена")
-		ctx.JSON(401, models.ErrResponce{ErrMessage: "refreshToken lifetime has expired"})
+		ctx.JSON(401, models.ErrResponce{ErrMessage: "the refreshToken's lifetime has expired and it has been deleted"})
 		// ctx.Redirect(303, "/login") // если RefreshToken истек, то нужно перенаправить на страницу входа
 		return
 	}
 
-	// проверка ip-адресов, если новый -> послаем email warning на почту
+	// проверка ip-адресов, если новый -> посылаем email warning на почту
+	sendWarning := make(chan string, 1)
 	if incomingIP != activeSission.SessionIP {
 		log.Println("новый ip, отправка письма!")
+		go func() {
+			resultSend, errSend := utils.SendEmailWarning(emailUser, incomingIP)
+			if resultSend != "" {
+				sendWarning <- resultSend
+			} else {
+				sendWarning <- errSend
+			}
+			close(sendWarning)
+		}()
 	}
 
 	// создаем новый AcessToken
@@ -152,6 +163,14 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	newActiveSission.SessionGUID = guidSessionStr
 	newActiveSission.SessionIP = incomingIP
 	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(120 * time.Second)) // устанавливаем время жизни токена, тут 1 час
+
+	// проверяем результат отправки email warning, код не пойдет дальше пока не будут получены данные из канала
+	resSendEmail := <-sendWarning
+	if resSendEmail != "email warning was successfully sent" {
+		log.Printf("ERROR - email warning не был отправлен\nОшибка: %s", resSendEmail)
+	} else {
+		log.Println("email warning был успешно отправлен")
+	}
 
 	// удаляем страую сессию
 	if _, err := delSession(guidSessionStr, &newActiveSission); err != nil {
