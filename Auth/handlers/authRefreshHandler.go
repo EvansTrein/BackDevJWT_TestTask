@@ -162,9 +162,9 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	newActiveSission.RefreshToken = hashedNewRefreshToken // в БД отправляется bcrypt хеш
 	newActiveSission.SessionGUID = guidSessionStr
 	newActiveSission.SessionIP = incomingIP
-	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(120 * time.Second)) // устанавливаем время жизни токена, тут 1 час
+	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(3600 * time.Second)) // устанавливаем время жизни токена, тут 1 час
 
-	// проверяем результат отправки email warning, код не пойдет дальше пока не будут получены данные из канала
+	// проверяем результат отправки email warning, код не пойдет дальше, пока не будут получены данные из канала
 	resSendEmail := <-sendWarning
 	if resSendEmail != "email warning was successfully sent" {
 		log.Printf("ERROR - email warning не был отправлен\nОшибка: %s", resSendEmail)
