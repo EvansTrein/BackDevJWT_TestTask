@@ -11,12 +11,12 @@ import (
 
 const JWT_SECRET = "adsiAWqegd234123Sgke"
 
-func GenerateAcessToken(guid, clientIP string) (string, error) {
+func GenerateAcessToken(refreshTokenID uint, clientIP string) (string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		// создаем Payload токена
-		"guid":     guid,
-		"clientIP": clientIP,
-		"exp":      time.Now().Add(time.Minute * 1).Unix(), // время жизни токена
+		"refreshTokenID": refreshTokenID,
+		"clientIP":       clientIP,
+		"exp":            time.Now().Add(time.Minute * 1).Unix(), // время жизни токена
 	})
 
 	// подписываем токен

@@ -57,19 +57,21 @@ func AuthRefreshHandler(ctx *gin.Context) {
 
 	// вытаскиваем нагрузку из AccessToken
 	paylodAccessToken := oldAccessToken.Claims.(jwt.MapClaims)
-	guidSession, ok := paylodAccessToken["guid"]
+	idSession, ok := paylodAccessToken["refreshTokenID"]
 	if !ok {
 		ctx.JSON(400, models.ErrResponce{ErrMessage: "failed to get a guid from oldAccessToken"})
 		return
 	}
-	guidSessionStr, ok := guidSession.(string) // из нагрузки мы получили данные как interface, а нам нужна string
+	refreshTokenID64, ok := idSession.(float64) // из нагрузки мы получили данные как interface, приводим к float64
 	if !ok {
-		ctx.JSON(400, models.ErrResponce{ErrMessage: "failed to convert guid to string type"})
+		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to convert refreshTokenID to float64 type"})
+		log.Panicln("ошибка при преобразовании типа")
 		return
 	}
+	refreshTokenID := uint(refreshTokenID64) // приводим к uint
 
-	// ищем по GUID из AccessToken запись в БД с RefreshToken
-	if res := database.DB.Where("session_guid = ?", guidSessionStr).First(&activeSission); res.Error != nil {
+	// ищем по refreshTokenID из нагрузки AccessToken запись в БД с RefreshToken
+	if res := database.DB.Where("id = ?", refreshTokenID).First(&activeSission); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			ctx.JSON(404, models.ErrResponce{ErrMessage: "failed to find a session with such guid"})
 			return
@@ -80,21 +82,12 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	}
 
 	// проверяем пришедший в запросе RefreshToken(пришла строка) с хешем из записи в БД с RefreshToken
-	// при создании, в нагрузке AccessToken был GUID и при создании RefreshToken - в запись добавляли GUID
-	// получается, что GUID - общий уникальный идентификатор, который обоюдно связывает AccessToken и RefreshToken
-	// значит, если по этому GUID найдется ДРУГОЙ хеш RefreshToken - токены не были созданы вместе
+	// при создании токенов, в нагрузке AccessToken был ID записи БД с RefreshToken, т.е. id сесии вшивался в AccessToken
+	// так обоюдно связываются AccessToken и RefreshToken
+	// значит, если по этому refreshTokenID найдется ДРУГАЯ запись с хешем RefreshToken - токены не были созданы вместе
 	if isValidHash := utils.CheckHashing(incomingRefreshToken, activeSission.RefreshToken); !isValidHash {
-		ctx.JSON(400, models.ErrResponce{ErrMessage: "this refreshToken cannot be used to issue new tokens"})
+		ctx.JSON(400, models.ErrResponce{ErrMessage: "this refreshToken was not created with this accessToken"})
 		// ctx.Redirect(303, "/login") // нужно заново войти, перенаправляем
-		return
-	}
-
-	// еще одна проверка, для перестраховки, если выше хеш из RefreshToken, полученный по GUID из AccessToken
-	// прошел проверку, но при этом, GUID были разные - это очень плохо!
-	if guidSessionStr != activeSission.SessionGUID {
-		ctx.JSON(500, models.ErrResponce{ErrMessage: "the GUID in AccessToken is different from the GUID in RefreshToken"})
-		// если попали сюда, значит произошло то, что считалось невозможным
-		// в этом случае надо какие-то действия предпринять, сообщить кому-то например
 		return
 	}
 
@@ -105,7 +98,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	if sinceRefreshTokenCreated > activeSission.MaxSessionDuration {
 
 		// удаляем сессию из БД, если время жизни RefreshToken истекло
-		if err := delSession(guidSessionStr, &newActiveSission); err != nil {
+		if err := delSession(activeSission.SessionGUID, &newActiveSission); err != nil {
 			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
 			log.Panicln(err)
 			return
@@ -134,14 +127,6 @@ func AuthRefreshHandler(ctx *gin.Context) {
 		sendWarning <- "the ip address has not been changed"
 	}
 
-	// создаем новый AcessToken
-	createdNewAcessToken, err := tokens.GenerateAcessToken(guidSessionStr, incomingIP)
-	if err != nil {
-		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to generate access token"})
-		log.Panicln(err)
-		return
-	}
-
 	// создаем новый RefreshToken
 	createdNewRefreshToken, err := tokens.GenerateRefreshToken()
 	if err != nil {
@@ -160,9 +145,9 @@ func AuthRefreshHandler(ctx *gin.Context) {
 
 	// готовим данные для записи новой сессии
 	newActiveSission.RefreshToken = hashedNewRefreshToken // в БД отправляется bcrypt хеш
-	newActiveSission.SessionGUID = guidSessionStr
+	newActiveSission.SessionGUID = activeSission.SessionGUID
 	newActiveSission.SessionIP = incomingIP
-	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(1 * time.Second)) // устанавливаем время жизни токена, тут 1 час
+	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(360 * time.Second)) // устанавливаем время жизни токена, тут 1 час
 	log.Println(newActiveSission.MaxSessionDuration)
 
 	// проверяем результат отправки email warning, код не пойдет дальше, пока не будут получены данные из канала
@@ -177,7 +162,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	}
 
 	// удаляем страую сессию
-	if err := delSession(guidSessionStr, &newActiveSission); err != nil {
+	if err := delSession(activeSission.SessionGUID, &newActiveSission); err != nil {
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
 		log.Panicln(err)
 		return
@@ -191,6 +176,25 @@ func AuthRefreshHandler(ctx *gin.Context) {
 		return
 	}
 	log.Println("Запись обновленной сессии в БД успешно создана")
+
+	// ищем только что созданную запись, чтобы получить ее ID
+	if res := database.DB.Where("session_guid = ?", activeSission.SessionGUID).First(&newActiveSission); res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			ctx.JSON(500, models.ErrResponce{ErrMessage: "could not find a session with this ID, but it was just created"})
+			return
+		} else {
+			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to search the active sessions database"})
+			return
+		}
+	}
+
+	// создаем новый AcessToken
+	createdNewAcessToken, err := tokens.GenerateAcessToken(newActiveSission.ID, incomingIP)
+	if err != nil {
+		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to generate access token"})
+		log.Panicln(err)
+		return
+	}
 
 	// записываем новые токены для ответа
 	newTokens.AccessToken = createdNewAcessToken

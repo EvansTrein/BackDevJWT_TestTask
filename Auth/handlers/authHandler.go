@@ -57,14 +57,6 @@ func AuthHandler(ctx *gin.Context) {
 		return
 	}
 
-	// создаем AcessToken
-	createdAcessToken, err := tokens.GenerateAcessToken(GUID, AdressIp)
-	if err != nil {
-		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to generate access token"})
-		log.Panicln(err)
-		return
-	}
-
 	// создаем RefreshToken
 	createdRefreshToken, err := tokens.GenerateRefreshToken()
 	if err != nil {
@@ -95,6 +87,25 @@ func AuthHandler(ctx *gin.Context) {
 		return
 	}
 	log.Println("Запись сессии в БД успешно создана")
+
+	// ищем только что созданную запись, чтобы получить ее ID
+	if res := database.DB.Where("session_guid = ?", GUID).First(&sessionUser); res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			ctx.JSON(500, models.ErrResponce{ErrMessage: "could not find a session with this ID, but it was just created"})
+			return
+		} else {
+			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to search the active sessions database"})
+			return
+		}
+	}
+
+	// создаем AcessToken, в нагрузку которого отправится ID записи с RefreshToken
+	createdAcessToken, err := tokens.GenerateAcessToken(sessionUser.ID, AdressIp)
+	if err != nil {
+		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to generate access token"})
+		log.Panicln(err)
+		return
+	}
 
 	// заполняем данные для ответа
 	createdTokens.AccessToken = createdAcessToken

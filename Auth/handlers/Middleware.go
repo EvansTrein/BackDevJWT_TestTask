@@ -71,19 +71,6 @@ func Middleware(ctx *gin.Context) {
 		return
 	}
 
-	// проверяем результат Refresh операции
-	switch {
-	case respRefreshOperation.StatusCode == 500:
-		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to update tokens"})
-		ctx.Abort()
-		return
-	case respRefreshOperation.StatusCode != 200:
-		ctx.JSON(401, models.ErrResponce{ErrMessage: "RefreshToken expired, need to re-authorize"})
-		ctx.Abort()
-		// ctx.Redirect(303, "/login")
-		return
-	}
-
 	// приводим данные из тела запроса к ключ-значение
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
@@ -91,6 +78,21 @@ func Middleware(ctx *gin.Context) {
 		log.Println(err)
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "error when converting answer body to map"})
 		ctx.Abort()
+		return
+	}
+
+	// проверяем результат Refresh операции
+	switch {
+	case respRefreshOperation.StatusCode == 500:
+		info := data["ErrMessage"].(string) // была ошибка, узнаем что случилось
+		ctx.JSON(500, models.ErrResponce{ErrMessage: info})
+		ctx.Abort()
+		return
+	case respRefreshOperation.StatusCode != 200:
+		info := data["ErrMessage"].(string) // была ошибка, узнаем что случилось
+		ctx.JSON(401, models.ErrResponce{ErrMessage: info})
+		ctx.Abort()
+		// ctx.Redirect(303, "/login")
 		return
 	}
 
@@ -102,7 +104,7 @@ func Middleware(ctx *gin.Context) {
 		return
 	}
 
-	log.Println("через Middleware были созданы новое токены")
+	log.Println("через Middleware были созданы новые токены")
 	ctx.JSON(200, models.ResponceData{Message: "tokens have been updated", Data: newTokens})
 	ctx.Next()
 }

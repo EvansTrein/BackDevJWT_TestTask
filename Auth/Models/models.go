@@ -21,7 +21,7 @@ type UserData struct {
 
 type AuthData struct {
 	Email string `json:"email" binding:"required,email"`
-	Pass string `json:"password" binding:"required,min=6"`
+	Pass  string `json:"password" binding:"required,min=6"`
 }
 
 type ClientSession struct {
@@ -29,6 +29,7 @@ type ClientSession struct {
 	RefreshToken       string        `gorm:"not null;unique" json:"-"`
 	SessionGUID        string        `gorm:"not null;unique" json:"-"`
 	SessionIP          string        `gorm:"not null" json:"-"`
+	RefreshTokenID     uint          `gorm:"not null" json:"-"`
 	MaxSessionDuration time.Duration `gorm:"not null" json:"-"`
 }
 
