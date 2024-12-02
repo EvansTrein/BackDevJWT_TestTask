@@ -19,6 +19,11 @@ type UserData struct {
 	PassUser  string `json:"password" binding:"required,min=6"`
 }
 
+type UserDataUpd struct {
+	Email string `json:"email" binding:"required,email"`
+	Pass  string `json:"password" binding:"required,min=6"`
+}
+
 type AuthData struct {
 	Email string `json:"email" binding:"required,email"`
 	Pass  string `json:"password" binding:"required,min=6"`

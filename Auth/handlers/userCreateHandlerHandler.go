@@ -14,7 +14,7 @@ func UserCreateHandler(ctx *gin.Context) {
 	var newUser models.User      // переменная для запси в БД user
 	var userData models.UserData // переменная для данных из запроса
 
-	// парсим данные из тела запроса
+	// получаем данные из тела запроса
 	err := ctx.BindJSON(&userData)
 	if err != nil {
 		ctx.JSON(400, models.ErrResponce{ErrMessage: "incorrect data in body"})

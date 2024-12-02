@@ -20,6 +20,7 @@ func Middleware(ctx *gin.Context) {
 
 	if incomingAccessToken == "" {
 		ctx.JSON(401, models.ErrResponce{ErrMessage: "unauthorized user"})
+		ctx.Abort()
 		return
 		// ctx.Redirect(303, "/login")
 	}
@@ -28,6 +29,7 @@ func Middleware(ctx *gin.Context) {
 	oldAccessToken, err := tokens.ValidateAccessToken(incomingAccessToken)
 	if err != nil {
 		ctx.JSON(400, models.ErrResponce{ErrMessage: err.Error()})
+		ctx.Abort()
 		return
 	}
 

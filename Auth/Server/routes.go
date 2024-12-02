@@ -20,9 +20,9 @@ func InitRotes() {
 
 	router.GET("/user/:guid", handlers.Middleware, handlers.UserHandler)
 
-	router.PUT("/user/:guid/update", handlers.Middleware, handlers.UserUpdateHandler)
+	router.PUT("/user/:guid/update", handlers.UserUpdateHandler)
 
-	router.DELETE("/user/:guid/del", handlers.Middleware, handlers.UserDelHandler)
+	router.DELETE("/user/:guid/del", handlers.UserDelHandler)
 
 
 	// router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

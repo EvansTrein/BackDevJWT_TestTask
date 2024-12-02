@@ -4,6 +4,7 @@ import (
 	database "AuthServ/Database"
 	models "AuthServ/Models"
 	"errors"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -27,5 +28,6 @@ func DelSessionHandler(ctx *gin.Context) {
 		return
 	}
 
+	log.Println("сессия успешно удалена")
 	ctx.JSON(200, models.ResponceMessage{Message: "session successfully deleted"})
 }
