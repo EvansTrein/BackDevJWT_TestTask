@@ -37,7 +37,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 
 	// получаем AccessToken из заголовка Authorization и обрезаем префикс Bearer
 	incomingAccessToken := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
-	// получаем AccessToken из заголовка RefreshToken
+	// получаем RefreshToken из заголовка RefreshToken
 	incomingRefreshToken := ctx.GetHeader("RefreshToken")
 
 	// проверка, что нужные данные были переданы
