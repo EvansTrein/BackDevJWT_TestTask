@@ -15,16 +15,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func delSession(guid string, table *models.ClientSession) (string, error) {
+func delSession(guid string, table *models.ClientSession) error {
 
 	// удаляем старую запись с RefreshToken из БД, удаляем без возможности восстановления
 	// получается, что использовать старый RefreshToken повторно не получится, так как он удаляется
 	res := database.DB.Where("session_guid = ?", guid).Unscoped().Delete(table)
 	if res.Error != nil {
-		return "", res.Error
+		return res.Error
 	}
 
-	return "successfully deleted", nil
+	return nil
 }
 
 func AuthRefreshHandler(ctx *gin.Context) {
@@ -107,7 +107,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	if sinceRefreshTokenCreated > activeSission.MaxSessionDuration {
 
 		// удаляем сессию из БД, если время жизни RefreshToken истекло
-		if _, err := delSession(guidSessionStr, &newActiveSission); err != nil {
+		if err := delSession(guidSessionStr, &newActiveSission); err != nil {
 			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
 			log.Panicln(err)
 			return
@@ -132,6 +132,8 @@ func AuthRefreshHandler(ctx *gin.Context) {
 			}
 			close(sendWarning)
 		}()
+	} else {
+		sendWarning <- "the ip address has not been changed"
 	}
 
 	// создаем новый AcessToken
@@ -166,14 +168,17 @@ func AuthRefreshHandler(ctx *gin.Context) {
 
 	// проверяем результат отправки email warning, код не пойдет дальше, пока не будут получены данные из канала
 	resSendEmail := <-sendWarning
-	if resSendEmail != "email warning was successfully sent" {
-		log.Printf("ERROR - email warning не был отправлен\nОшибка: %s", resSendEmail)
-	} else {
+	switch resSendEmail {
+	case "email warning was successfully sent":
 		log.Println("email warning был успешно отправлен")
+	case "the ip address has not been changed":
+		log.Println("ip-адрес не менялся")
+	default:
+		log.Printf("ERROR - email warning не был отправлен\nОшибка: %s", resSendEmail)
 	}
 
 	// удаляем страую сессию
-	if _, err := delSession(guidSessionStr, &newActiveSission); err != nil {
+	if err := delSession(guidSessionStr, &newActiveSission); err != nil {
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
 		log.Panicln(err)
 		return
