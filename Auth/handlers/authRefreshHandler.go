@@ -7,7 +7,6 @@ import (
 	"AuthServ/utils"
 	"errors"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,6 @@ import (
 )
 
 func delSession(guid string, table *models.ClientSession) error {
-
 	// удаляем старую запись с RefreshToken из БД, удаляем без возможности восстановления
 	// получается, что использовать старый RefreshToken повторно не получится, так как он удаляется
 	res := database.DB.Where("session_guid = ?", guid).Unscoped().Delete(table)
@@ -35,8 +33,8 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	emailUser := "evanstrein@icloud.com"      // для отправки warning на почту, по хорошему, получаем из базы данных
 	// incomingIP := ctx.ClientIP()			  // получаем IP-адрес клиента, если бы он был
 
-	// получаем AccessToken из заголовка Authorization и обрезаем префикс Bearer
-	incomingAccessToken := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
+	// получаем AccessToken из заголовка Authorization
+	incomingAccessToken := ctx.GetHeader("Authorization")
 	// получаем RefreshToken из заголовка RefreshToken
 	incomingRefreshToken := ctx.GetHeader("RefreshToken")
 
@@ -164,7 +162,8 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	newActiveSission.RefreshToken = hashedNewRefreshToken // в БД отправляется bcrypt хеш
 	newActiveSission.SessionGUID = guidSessionStr
 	newActiveSission.SessionIP = incomingIP
-	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(3600 * time.Second)) // устанавливаем время жизни токена, тут 1 час
+	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(1 * time.Second)) // устанавливаем время жизни токена, тут 1 час
+	log.Println(newActiveSission.MaxSessionDuration)
 
 	// проверяем результат отправки email warning, код не пойдет дальше, пока не будут получены данные из канала
 	resSendEmail := <-sendWarning

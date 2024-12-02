@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"net/smtp"
+	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -50,4 +51,11 @@ func SendEmailWarning(email, newIP string) (string, string) {
 	}
 
 	return "email warning was successfully sent", ""
+}
+
+func IsGUID(s string) bool {
+	// Регулярное выражение для проверки формата GUID
+	guidRegex := `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
+	ok, _ := regexp.MatchString(guidRegex, s)
+	return ok
 }

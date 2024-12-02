@@ -14,9 +14,14 @@ type User struct {
 }
 
 type UserData struct {
-	GUID      string `json:"-"`
+	GUID      string `json:"guid" binding:"required"`
 	EmailUser string `json:"email" binding:"required,email"`
 	PassUser  string `json:"password" binding:"required,min=6"`
+}
+
+type AuthData struct {
+	Email string `json:"email" binding:"required,email"`
+	Pass string `json:"password" binding:"required,min=6"`
 }
 
 type ClientSession struct {
@@ -39,4 +44,8 @@ type ErrResponce struct {
 type ResponceData struct {
 	Message string
 	Data    interface{}
+}
+
+type ResponceMessage struct {
+	Message string
 }
