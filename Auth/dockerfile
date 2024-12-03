@@ -1,0 +1,18 @@
+# Этап 1: Сборка зависимостей
+FROM golang:1.23.3-alpine AS builder
+WORKDIR /app
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+# Этап 2: Сборка приложения
+COPY . .
+RUN go build -o main .
+
+# Этап 3: Создание образа с бинарником
+FROM alpine:latest
+WORKDIR /app
+# сохраняем файл с внешними переменными 
+COPY --from=builder /app/main . 
+EXPOSE 4000
+CMD ["./main"]

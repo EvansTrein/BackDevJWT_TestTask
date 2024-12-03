@@ -11,7 +11,7 @@ import (
 )
 
 // @Summary Удаление пользователя
-// @Description Удаление пользователя с указанным GUID и его сессии, если она есть
+// @Description Удаление пользователя с указанным GUID и его сессии
 // @Tags user
 // @Accept json
 // @Produce json
@@ -48,8 +48,7 @@ func UserDelHandler(ctx *gin.Context) {
 	// ищем сессию
 	if resFind := database.DB.Where("session_guid = ?", GUID).First(&sessionUser); resFind.Error != nil {
 		if errors.Is(resFind.Error, gorm.ErrRecordNotFound) {
-			ctx.JSON(200, models.ResponceMessage{Message: "user successfully deleted"})
-			log.Println("у пользователя не было сессии")
+			ctx.JSON(404, models.ResponceMessage{Message: "user not found"})
 			return
 		}
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to find session"})

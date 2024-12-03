@@ -4,7 +4,7 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "Тестовое задание от MEDODS",
+        "description": "Тестовое задание от MEDODS\nДля доступа к защищенным методам потребуются АccessToken и RefreshToken\nдля их получения нужно создать пользователя и выполнить вход",
         "title": "Сервис аутентификации",
         "contact": {
             "name": "Evans Trein",
@@ -17,7 +17,7 @@
     "paths": {
         "/auth/delSession/{guid}": {
             "delete": {
-                "description": "Удаление сессии с указанным GUID",
+                "description": "Удаление сессии с указанным GUID, если нужно удалить вручную",
                 "consumes": [
                     "application/json"
                 ],
@@ -258,7 +258,7 @@
                         "refreshRefresh": []
                     }
                 ],
-                "description": "Удаление пользователя с указанным GUID и его сессии, если она есть",
+                "description": "Удаление пользователя с указанным GUID и его сессии",
                 "consumes": [
                     "application/json"
                 ],

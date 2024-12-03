@@ -21,7 +21,7 @@ const docTemplate = `{
     "paths": {
         "/auth/delSession/{guid}": {
             "delete": {
-                "description": "Удаление сессии с указанным GUID",
+                "description": "Удаление сессии с указанным GUID, если нужно удалить вручную",
                 "consumes": [
                     "application/json"
                 ],
@@ -262,7 +262,7 @@ const docTemplate = `{
                         "refreshRefresh": []
                     }
                 ],
-                "description": "Удаление пользователя с указанным GUID и его сессии, если она есть",
+                "description": "Удаление пользователя с указанным GUID и его сессии",
                 "consumes": [
                     "application/json"
                 ],
@@ -562,7 +562,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "",
 	Schemes:          []string{"http"},
 	Title:            "Сервис аутентификации",
-	Description:      "Тестовое задание от MEDODS",
+	Description:      "Тестовое задание от MEDODS\nДля доступа к защищенным методам потребуются АccessToken и RefreshToken\nдля их получения нужно создать пользователя и выполнить вход",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

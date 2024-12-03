@@ -5,6 +5,8 @@ import server "AuthServ/Server"
 // @title           Сервис аутентификации
 // @version         1.0
 // @description     Тестовое задание от MEDODS
+// @description     Для доступа к защищенным методам потребуются АccessToken и RefreshToken
+// @description     для их получения нужно создать пользователя и выполнить вход
 
 // @contact.name   Evans Trein
 // @contact.email  evanstrein@icloud.com

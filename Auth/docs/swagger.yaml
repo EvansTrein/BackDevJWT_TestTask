@@ -84,7 +84,10 @@ info:
     email: evanstrein@icloud.com
     name: Evans Trein
     url: https://github.com/EvansTrein
-  description: Тестовое задание от MEDODS
+  description: |-
+    Тестовое задание от MEDODS
+    Для доступа к защищенным методам потребуются АccessToken и RefreshToken
+    для их получения нужно создать пользователя и выполнить вход
   title: Сервис аутентификации
   version: "1.0"
 paths:
@@ -132,7 +135,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Удаление сессии с указанным GUID
+      description: Удаление сессии с указанным GUID, если нужно удалить вручную
       parameters:
       - description: Уникальный идентификатор сессии
         format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
@@ -247,7 +250,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Удаление пользователя с указанным GUID и его сессии, если она есть
+      description: Удаление пользователя с указанным GUID и его сессии
       parameters:
       - description: Уникальный идентификатор пользователя
         format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1

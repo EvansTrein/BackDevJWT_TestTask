@@ -11,7 +11,7 @@ import (
 )
 
 // @Summary Удаление сессии
-// @Description Удаление сессии с указанным GUID
+// @Description Удаление сессии с указанным GUID, если нужно удалить вручную
 // @Tags auth
 // @Accept json
 // @Produce json
