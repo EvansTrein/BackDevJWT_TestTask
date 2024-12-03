@@ -1,0 +1,344 @@
+definitions:
+  models.AuthData:
+    properties:
+      email:
+        example: user1@mail.com
+        type: string
+      password:
+        example: "123456"
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.ErrResponce:
+    properties:
+      errMessage:
+        example: error message
+        type: string
+    type: object
+  models.GetUserExample:
+    properties:
+      email:
+        example: user1@mail.com
+        type: string
+      guid:
+        example: 3c43e84d-fc44-4895-bc72-2a7924417b80
+        type: string
+    type: object
+  models.ResponceMessage:
+    properties:
+      message:
+        example: info message
+        type: string
+    type: object
+  models.Tokens:
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJUCI6IjEyNy4wLjAuMSIsImV4cCI6MTczMzE4MzY5MSwicmVmcmVzaFRva2VuSUQiOjExfQ.LyuwUe7IPSG2_aPdT59Ms2_xmDPa9-ymhGsuuJ_uwi5wzxfjoHerNSTpJLf2ZQUXGNjDp3BHgs2jXw4ehLLjuQ
+        type: string
+      refreshToken:
+        example: 3r65EyQIo/NsGR3TE1/Y7GIuD+jm1diGf+zZ4DoXwhg=
+        type: string
+    type: object
+  models.UserData:
+    properties:
+      email:
+        example: user1@mail.com
+        type: string
+      guid:
+        example: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        type: string
+      password:
+        example: "123456"
+        minLength: 6
+        type: string
+    required:
+    - email
+    - guid
+    - password
+    type: object
+  models.UserDataUpd:
+    properties:
+      email:
+        example: user1@mail.com
+        type: string
+      password:
+        example: "123456"
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:4000
+info:
+  contact:
+    email: evanstrein@icloud.com
+    name: Evans Trein
+    url: https://github.com/EvansTrein
+  description: Тестовое задание от MEDODS
+  title: Сервис аутентификации
+  version: "1.0"
+paths:
+  /auth/{guid}:
+    post:
+      consumes:
+      - application/json
+      description: Аутентификация пользователя с предоставленным GUID
+      parameters:
+      - description: GUID пользователя
+        format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        in: path
+        name: guid
+        required: true
+        type: string
+      - description: Данные для входа
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Аутентификация пользователя
+      tags:
+      - auth
+  /auth/delSession/{guid}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление сессии с указанным GUID
+      parameters:
+      - description: Уникальный идентификатор сессии
+        format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        in: path
+        name: guid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponceMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Удаление сессии
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет AccessToken и RefreshToken токены
+      parameters:
+      - description: AccessToken
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: RefreshToken
+        in: header
+        name: RefreshToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Tokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Refresh operation
+      tags:
+      - auth
+  /user/{guid}:
+    get:
+      consumes:
+      - application/json
+      description: Получение данных пользователя с указанным GUID
+      parameters:
+      - description: Уникальный идентификатор пользователя
+        format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        in: path
+        name: guid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetUserExample'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Получение данных пользователя
+      tags:
+      - user
+  /user/{guid}/del:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление пользователя с указанным GUID и его сессии, если она есть
+      parameters:
+      - description: Уникальный идентификатор пользователя
+        format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        in: path
+        name: guid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponceMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Удаление пользователя
+      tags:
+      - user
+  /user/{guid}/update:
+    put:
+      consumes:
+      - application/json
+      description: Обновление данных пользователя по GUID
+      parameters:
+      - description: Уникальный идентификатор пользователя
+        format: 7c5e66cf-57ba-4871-9186-74ff5ab1e1f1
+        in: path
+        name: guid
+        required: true
+        type: string
+      - description: Новые данные пользователя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserDataUpd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponceMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Обновление данных пользователя
+      tags:
+      - user
+  /userCreate:
+    post:
+      consumes:
+      - application/json
+      description: Создание нового пользователя с предоставленными данными
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ResponceMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrResponce'
+      summary: Создание нового пользователя
+      tags:
+      - user
+schemes:
+- http
+swagger: "2.0"

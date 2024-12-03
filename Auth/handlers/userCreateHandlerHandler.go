@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Создание нового пользователя
+// @Description Создание нового пользователя с предоставленными данными
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param body body models.UserData true "Данные пользователя"
+// @Success 201 {object} models.ResponceMessage
+// @Failure 400 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
+// @Router /userCreate [post]
 func UserCreateHandler(ctx *gin.Context) {
 	var newUser models.User      // переменная для запси в БД user
 	var userData models.UserData // переменная для данных из запроса

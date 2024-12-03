@@ -13,6 +13,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// @securityDefinitions.basic BasicAuth
+
+// @Summary Аутентификация пользователя
+// @Description Аутентификация пользователя с предоставленным GUID
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param guid path string true "GUID пользователя" Format(7c5e66cf-57ba-4871-9186-74ff5ab1e1f1)
+// @Param body body models.AuthData true "Данные для входа"
+// @Success 200 {object} models.Tokens
+// @Failure 400 {object} models.ErrResponce
+// @Failure 404 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
+// @Router /auth/{guid} [post]
 func AuthHandler(ctx *gin.Context) {
 	GUID := ctx.Param("guid")            // получаем GUID из параметра запроса
 	var sessionUser models.ClientSession // структура для сохранения RefreshToken в БД

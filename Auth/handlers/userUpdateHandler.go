@@ -12,6 +12,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary Обновление данных пользователя
+// @Description Обновление данных пользователя по GUID
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param guid path string true "Уникальный идентификатор пользователя" Format(7c5e66cf-57ba-4871-9186-74ff5ab1e1f1)
+// @Param body body models.UserDataUpd true "Новые данные пользователя"
+// @Success 200 {object} models.ResponceMessage
+// @Failure 400 {object} models.ErrResponce
+// @Failure 404 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
+// @Router /user/{guid}/update [put]
 func UserUpdateHandler(ctx *gin.Context) {
 	var activeUser models.User
 	var newDataUser models.UserDataUpd

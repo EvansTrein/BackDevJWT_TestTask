@@ -25,6 +25,19 @@ func delSession(guid string, table *models.ClientSession) error {
 	return nil
 }
 
+// @Summary Refresh operation
+// @Description Обновляет AccessToken и RefreshToken токены 
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "AccessToken"
+// @Param RefreshToken header string true "RefreshToken"
+// @Success 200 {object} models.Tokens
+// @Failure 400 {object} models.ErrResponce
+// @Failure 401 {object} models.ErrResponce
+// @Failure 404 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
+// @Router /auth/refresh [post]
 func AuthRefreshHandler(ctx *gin.Context) {
 	var activeSission models.ClientSession    // переменная для хранения активной сессии, в которой находится RefreshToken
 	var newActiveSission models.ClientSession // переменная для новой сессии, которая будет создана при обнолении токенов

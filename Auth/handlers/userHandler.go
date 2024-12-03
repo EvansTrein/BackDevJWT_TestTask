@@ -10,6 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary Получение данных пользователя
+// @Description Получение данных пользователя с указанным GUID
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param guid path string true "Уникальный идентификатор пользователя" Format(7c5e66cf-57ba-4871-9186-74ff5ab1e1f1)
+// @Success 200 {object} models.GetUserExample
+// @Failure 400 {object} models.ErrResponce
+// @Failure 404 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
+// @Router /user/{guid} [get]
 func UserHandler(ctx *gin.Context) {
 	var activeUser models.User // переменная для поиска пользователя
 	GUID := ctx.Param("guid")  // получаем GUID из параметра запроса

@@ -11,7 +11,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
+// @Summary Middleware
+// @Description Middleware обеспечение для проверки AccessToken и обновления токенов
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer AccessToken"
+// @Param RefreshToken header string true "RefreshToken"
+// @Success 200 {object} models.Tokens
+// @Failure 400 {object} models.ErrResponce
+// @Failure 401 {object} models.ErrResponce
+// @Failure 404 {object} models.ErrResponce
+// @Failure 500 {object} models.ErrResponce
 func Middleware(ctx *gin.Context) {
 	// получаем AccessToken из заголовка Authorization и обрезаем префикс Bearer
 	incomingAccessToken := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
