@@ -23,9 +23,9 @@ services:
     networks:
       - server_net
     ports:
-      - 4000:4000
+      - ${AUTH_PORT}:${AUTH_PORT}
     environment:
-      AUTH_PORT: 4000
+      AUTH_PORT: ${AUTH_PORT}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}

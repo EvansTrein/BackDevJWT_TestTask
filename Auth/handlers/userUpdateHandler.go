@@ -27,9 +27,9 @@ import (
 // @Security refreshRefresh
 // @Router /user/{guid}/update [put]
 func UserUpdateHandler(ctx *gin.Context) {
-	var activeUser models.User
-	var newDataUser models.UserDataUpd
-	GUID := ctx.Param("guid")
+	GUID := ctx.Param("guid")          // получаем GUID из параметра запроса
+	var activeUser models.User         // переменная для пользователя, которого будем искать
+	var newDataUser models.UserDataUpd // переменная для вобновленных данных
 
 	// получаем данные из тела запроса
 	err := ctx.BindJSON(&newDataUser)

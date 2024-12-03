@@ -2,12 +2,13 @@ package server
 
 import (
 	"AuthServ/handlers"
+	"os"
 
 	_ "AuthServ/docs"
 
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/gin-swagger"
 	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 )
 
 func InitRotes() {
@@ -31,5 +32,5 @@ func InitRotes() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.Run(":4000")
+	router.Run(":" + os.Getenv("AUTH_PORT"))
 }
