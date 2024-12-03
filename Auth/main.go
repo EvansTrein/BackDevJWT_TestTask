@@ -13,6 +13,16 @@ import server "AuthServ/Server"
 // @host      localhost:4000
 // @schemes   http
 
+// @securityDefinitions.apikey accessToken
+// @in header
+// @name Authorization
+// @description Type Bearer  accessToken_example
+
+// @securityDefinitions.apikey refreshRefresh
+// @in header
+// @name RefreshToken
+// @description Type Bearer  refreshToken_example
+
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 

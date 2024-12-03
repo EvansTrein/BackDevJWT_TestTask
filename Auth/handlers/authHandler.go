@@ -7,6 +7,7 @@ import (
 	"AuthServ/utils"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -91,16 +92,20 @@ func AuthHandler(ctx *gin.Context) {
 	sessionUser.RefreshToken = hashedRefreshToken // в БД отправляется bcrypt хеш
 	sessionUser.SessionGUID = GUID
 	sessionUser.SessionIP = AdressIp
-	sessionUser.MaxSessionDuration = time.Duration(time.Duration(3600 * time.Second)) // устанавливаем время жизни токена, тут 1 час
-	log.Println(sessionUser.MaxSessionDuration)
-
+	sessionUser.MaxSessionDuration = time.Duration(time.Duration(360 * time.Second)) // устанавливаем время жизни токена, тут 6 минут
+	
 	// сохраняем данные
 	if res := database.DB.Create(&sessionUser); res.Error != nil {
+		if strings.Contains(res.Error.Error(), "23505") { // это проверка на дубликаты
+			ctx.JSON(400, models.ErrResponce{ErrMessage: "a session with this GUID already exists"})
+			return
+		}
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to save to the database"})
 		log.Panicln(res.Error)
 		return
 	}
 	log.Println("Запись сессии в БД успешно создана")
+	log.Println("создан новый RefreshToken, его время жизни->", sessionUser.MaxSessionDuration)
 
 	// ищем только что созданную запись, чтобы получить ее ID
 	if res := database.DB.Where("session_guid = ?", GUID).First(&sessionUser); res.Error != nil {

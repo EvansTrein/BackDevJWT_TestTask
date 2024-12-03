@@ -16,7 +16,7 @@ func GenerateAcessToken(refreshTokenID uint, clientIP string) (string, error) {
 		// создаем Payload токена
 		"refreshTokenID": refreshTokenID,
 		"clientIP":       clientIP,
-		"exp":            time.Now().Add(time.Minute * 1).Unix(), // время жизни токена
+		"exp":            time.Now().Add(time.Minute * 2).Unix(), // время жизни токена
 	})
 
 	// подписываем токен

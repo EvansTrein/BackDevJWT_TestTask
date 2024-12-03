@@ -56,7 +56,13 @@ type ResponceMessage struct {
 	Message string `example:"info message"`
 }
 
-type GetUserExample struct {
-	Guid  string `example:"3c43e84d-fc44-4895-bc72-2a7924417b80"`
-    Email string `example:"user1@mail.com"`
+type RespGetMidlExample struct {
+	MiddlewareStatus string `example:"тут могут быть сообщения от Middleware или ошибки или новые токены"` 
+	Guid             string `example:"3c43e84d-fc44-4895-bc72-2a7924417b80"`
+	Email            string `example:"user1@mail.com"`
+}
+
+type RespPutMidlExample struct {
+	MiddlewareStatus string `example:"тут могут быть сообщения от Middleware или новые токены"`
+	ResultPutMess string `example:"info message"`
 }

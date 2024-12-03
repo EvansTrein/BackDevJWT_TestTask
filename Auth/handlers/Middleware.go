@@ -46,7 +46,8 @@ func Middleware(ctx *gin.Context) {
 
 	// проверка валидности AccessToken
 	if oldAccessToken.Valid {
-		ctx.JSON(200, models.ResponceMessage{Message: "AccessToken has been successfully"})
+		// отправляем в контекст инфо о работе Middleware
+		ctx.Set("MessageMiddleware", models.ResponceMessage{Message: "AccessToken has been successfully"})
 		log.Println("AccessToken успешно прошел")
 		ctx.Next()
 		return
@@ -118,6 +119,7 @@ func Middleware(ctx *gin.Context) {
 	}
 
 	log.Println("через Middleware были созданы новые токены")
-	ctx.JSON(200, models.ResponceData{Message: "tokens have been updated", Data: newTokens})
+	// отправляем в контекст новые токены, чтобы потом отдать их в ответе
+	ctx.Set("DataMiddleware", models.ResponceData{Message: "tokens have been updated", Data: newTokens})
 	ctx.Next()
 }

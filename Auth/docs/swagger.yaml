@@ -18,13 +18,16 @@ definitions:
         example: error message
         type: string
     type: object
-  models.GetUserExample:
+  models.RespGetMidlExample:
     properties:
       email:
         example: user1@mail.com
         type: string
       guid:
         example: 3c43e84d-fc44-4895-bc72-2a7924417b80
+        type: string
+      middlewareStatus:
+        example: тут могут быть сообщения от Middleware или ошибки или новые токены
         type: string
     type: object
   models.ResponceMessage:
@@ -163,7 +166,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Обновляет AccessToken и RefreshToken токены
+      description: |-
+        Обновляет AccessToken и RefreshToken токены, если придет истекший RefreshToken, то сессия будет удалена
+        Обновляются только те токены, которые были созданы вместе
       parameters:
       - description: AccessToken
         in: header
@@ -198,7 +203,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrResponce'
-      summary: Refresh operation
+      summary: Refresh операция
       tags:
       - auth
   /user/{guid}:
@@ -219,7 +224,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetUserExample'
+            $ref: '#/definitions/models.RespGetMidlExample'
         "400":
           description: Bad Request
           schema:
@@ -232,6 +237,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrResponce'
+      security:
+      - accessToken: []
+      - refreshRefresh: []
       summary: Получение данных пользователя
       tags:
       - user
@@ -266,6 +274,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrResponce'
+      security:
+      - accessToken: []
+      - refreshRefresh: []
       summary: Удаление пользователя
       tags:
       - user
@@ -306,6 +317,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ErrResponce'
+      security:
+      - accessToken: []
+      - refreshRefresh: []
       summary: Обновление данных пользователя
       tags:
       - user
@@ -341,4 +355,15 @@ paths:
       - user
 schemes:
 - http
+securityDefinitions:
+  accessToken:
+    description: Type Bearer  accessToken_example
+    in: header
+    name: Authorization
+    type: apiKey
+  refreshRefresh:
+    description: Type Bearer  refreshToken_example
+    in: header
+    name: RefreshToken
+    type: apiKey
 swagger: "2.0"

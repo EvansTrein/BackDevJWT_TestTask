@@ -20,6 +20,8 @@ import (
 // @Failure 400 {object} models.ErrResponce
 // @Failure 404 {object} models.ErrResponce
 // @Failure 500 {object} models.ErrResponce
+// @Security accessToken
+// @Security refreshRefresh
 // @Router /user/{guid}/del [delete]
 func UserDelHandler(ctx *gin.Context) {
 	GUID := ctx.Param("guid")            // получаем GUID из параметра запроса

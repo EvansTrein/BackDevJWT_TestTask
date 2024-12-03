@@ -25,8 +25,9 @@ func delSession(guid string, table *models.ClientSession) error {
 	return nil
 }
 
-// @Summary Refresh operation
-// @Description Обновляет AccessToken и RefreshToken токены 
+// @Summary Refresh операция
+// @Description Обновляет AccessToken и RefreshToken токены, если придет истекший RefreshToken, то сессия будет удалена
+// @Description Обновляются только те токены, которые были созданы вместе
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -86,7 +87,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	// ищем по refreshTokenID из нагрузки AccessToken запись в БД с RefreshToken
 	if res := database.DB.Where("id = ?", refreshTokenID).First(&activeSission); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			ctx.JSON(404, models.ErrResponce{ErrMessage: "failed to find a session with such guid"})
+			ctx.JSON(404, models.ErrResponce{ErrMessage: "no active session could be found by AccessToken, AccessToken invalid"})
 			return
 		} else {
 			ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to search the active sessions database"})
@@ -160,9 +161,8 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	newActiveSission.RefreshToken = hashedNewRefreshToken // в БД отправляется bcrypt хеш
 	newActiveSission.SessionGUID = activeSission.SessionGUID
 	newActiveSission.SessionIP = incomingIP
-	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(360 * time.Second)) // устанавливаем время жизни токена, тут 1 час
-	log.Println(newActiveSission.MaxSessionDuration)
-
+	newActiveSission.MaxSessionDuration = time.Duration(time.Duration(360 * time.Second)) // устанавливаем время жизни токена, тут 6 минут
+	
 	// проверяем результат отправки email warning, код не пойдет дальше, пока не будут получены данные из канала
 	resSendEmail := <-sendWarning
 	switch resSendEmail {
@@ -173,7 +173,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 	default:
 		log.Printf("ERROR - email warning не был отправлен\nОшибка: %s", resSendEmail)
 	}
-
+	
 	// удаляем страую сессию
 	if err := delSession(activeSission.SessionGUID, &newActiveSission); err != nil {
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to delete an old session in the database"})
@@ -181,7 +181,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 		return
 	}
 	log.Println("Запись старой сессии в БД успешно удалена")
-
+	
 	// создаем новую сессию в БД, с новым RefreshToken и обновленным ip-адресом (если он действительно новый)
 	if res := database.DB.Create(&newActiveSission); res.Error != nil {
 		ctx.JSON(500, models.ErrResponce{ErrMessage: "failed to save a new session in the database"})
@@ -189,6 +189,7 @@ func AuthRefreshHandler(ctx *gin.Context) {
 		return
 	}
 	log.Println("Запись обновленной сессии в БД успешно создана")
+	log.Println("создан новый RefreshToken, его время жизни->", newActiveSission.MaxSessionDuration)
 
 	// ищем только что созданную запись, чтобы получить ее ID
 	if res := database.DB.Where("session_guid = ?", activeSission.SessionGUID).First(&newActiveSission); res.Error != nil {

@@ -72,7 +72,7 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
-                "description": "Обновляет AccessToken и RefreshToken токены",
+                "description": "Обновляет AccessToken и RefreshToken токены, если придет истекший RefreshToken, то сессия будет удалена\nОбновляются только те токены, которые были созданы вместе",
                 "consumes": [
                     "application/json"
                 ],
@@ -82,7 +82,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Refresh operation",
+                "summary": "Refresh операция",
                 "parameters": [
                     {
                         "type": "string",
@@ -195,6 +195,14 @@ const docTemplate = `{
         },
         "/user/{guid}": {
             "get": {
+                "security": [
+                    {
+                        "accessToken": []
+                    },
+                    {
+                        "refreshRefresh": []
+                    }
+                ],
                 "description": "Получение данных пользователя с указанным GUID",
                 "consumes": [
                     "application/json"
@@ -220,7 +228,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetUserExample"
+                            "$ref": "#/definitions/models.RespGetMidlExample"
                         }
                     },
                     "400": {
@@ -246,6 +254,14 @@ const docTemplate = `{
         },
         "/user/{guid}/del": {
             "delete": {
+                "security": [
+                    {
+                        "accessToken": []
+                    },
+                    {
+                        "refreshRefresh": []
+                    }
+                ],
                 "description": "Удаление пользователя с указанным GUID и его сессии, если она есть",
                 "consumes": [
                     "application/json"
@@ -297,6 +313,14 @@ const docTemplate = `{
         },
         "/user/{guid}/update": {
             "put": {
+                "security": [
+                    {
+                        "accessToken": []
+                    },
+                    {
+                        "refreshRefresh": []
+                    }
+                ],
                 "description": "Обновление данных пользователя по GUID",
                 "consumes": [
                     "application/json"
@@ -430,7 +454,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.GetUserExample": {
+        "models.RespGetMidlExample": {
             "type": "object",
             "properties": {
                 "email": {
@@ -440,6 +464,10 @@ const docTemplate = `{
                 "guid": {
                     "type": "string",
                     "example": "3c43e84d-fc44-4895-bc72-2a7924417b80"
+                },
+                "middlewareStatus": {
+                    "type": "string",
+                    "example": "тут могут быть сообщения от Middleware или ошибки или новые токены"
                 }
             }
         },
@@ -505,6 +533,20 @@ const docTemplate = `{
                     "example": "123456"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "accessToken": {
+            "description": "Type Bearer  accessToken_example",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "refreshRefresh": {
+            "description": "Type Bearer  refreshToken_example",
+            "type": "apiKey",
+            "name": "RefreshToken",
+            "in": "header"
         }
     },
     "externalDocs": {
